@@ -1,0 +1,23 @@
+{
+  "training_date": "2026-03-03T20:10:00.678081",
+  "accuracy": 0.7902,
+  "f2_score": 0.8032311845030168,
+  "best_epoch": 8,
+  "best_val_loss": 0.4516061597568974,
+  "confusion_matrix": {
+    "true_negatives": 3855,
+    "false_positives": 1145,
+    "false_negatives": 953,
+    "true_positives": 4047
+  },
+  "model_config": {
+    "pretrained_model": "AventIQ-AI/bert-movie-review-sentiment-analysis",
+    "input_dim": 128,
+    "hidden_dim_1": 128,
+    "hidden_dim_2": 64,
+    "dropout_rate": 0.3,
+    "learning_rate": 0.001,
+    "batch_size": 64
+  },
+  "data_source": "MongoDB"
+}
