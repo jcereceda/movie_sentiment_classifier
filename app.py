@@ -20,6 +20,7 @@ from api.schemas import (
     DatabaseStatsResponse
 )
 from api.predictor import SentimentPredictor
+from training.scheduler import RetrainingScheduler
 import config
 
 
@@ -30,11 +31,50 @@ predictor = SentimentPredictor()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestión del ciclo de vida de la aplicación"""
-    # Startup: Cargar modelos
+    global scheduler
+    
+    # Startup: Cargar modelos e iniciar scheduler
     print("Iniciando API...")
     try:
         predictor.load_models()
         print("API lista para recibir peticiones")
+        
+        # Iniciar scheduler si está habilitado
+        if config.RETRAIN_ENABLED:
+            print("\n" + "="*80)
+            print("CONFIGURANDO REENTRENAMIENTO AUTOMÁTICO")
+            print("="*80)
+            
+            scheduler = RetrainingScheduler()
+            
+            # Configurar según el tipo de schedule
+            if config.RETRAIN_SCHEDULE == "daily":
+                scheduler.schedule_daily(
+                    hour=config.RETRAIN_HOUR,
+                    minute=config.RETRAIN_MINUTE,
+                    min_improvement=config.RETRAIN_MIN_IMPROVEMENT
+                )
+            elif config.RETRAIN_SCHEDULE == "weekly":
+                scheduler.schedule_weekly(
+                    day_of_week=config.RETRAIN_DAY_OF_WEEK,
+                    hour=config.RETRAIN_HOUR,
+                    minute=config.RETRAIN_MINUTE,
+                    min_improvement=config.RETRAIN_MIN_IMPROVEMENT
+                )
+            elif config.RETRAIN_SCHEDULE == "interval":
+                scheduler.schedule_interval(
+                    hours=config.RETRAIN_INTERVAL_HOURS,
+                    min_improvement=config.RETRAIN_MIN_IMPROVEMENT
+                )
+            
+            scheduler.start()
+            
+            next_run = scheduler.get_next_run_time()
+            if next_run:
+                print(f"⏰ Próximo reentrenamiento: {next_run}")
+        else:
+            print("\nℹ️  Reentrenamiento automático deshabilitado")
+    
     except Exception as e:
         print(f"Error al cargar modelos: {e}")
         raise
@@ -42,7 +82,10 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    print("Cerrando API...")
+    print("\nCerrando API...")
+    if scheduler:
+        scheduler.stop()
+    print("API cerrada")
 
 
 # Crear aplicación FastAPI
@@ -283,6 +326,114 @@ async def global_exception_handler(request, exc):
         }
     )
 
+@app.post("/admin/retrain", tags=["Admin"])
+async def trigger_manual_retrain(min_improvement: float = 0.001):
+    """
+    Ejecuta un reentrenamiento manual del modelo
+    
+    - **min_improvement**: Mejora mínima de accuracy requerida (default: 0.001)
+    
+    ⚠️ Este proceso puede tardar varios minutos
+    """
+    if not config.RETRAIN_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El reentrenamiento automático está deshabilitado"
+        )
+    
+    try:
+        from training.auto_retrain import AutoRetrainer
+        
+        print("\n🔧 Reentrenamiento manual solicitado vía API")
+        retrainer = AutoRetrainer()
+        result = retrainer.run_auto_retrain(min_improvement=min_improvement)
+        
+        # Si el modelo se actualizó, recargar el predictor
+        if result['model_updated']:
+            print("🔄 Recargando modelo en el predictor...")
+            predictor.load_models()
+        
+        return {
+            "success": result['success'],
+            "model_updated": result['model_updated'],
+            "message": result['message'],
+            "current_accuracy": result['current_accuracy'],
+            "new_accuracy": result['new_accuracy'],
+            "improvement": result['new_accuracy'] - result['current_accuracy']
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error durante el reentrenamiento: {str(e)}"
+        )
+
+
+@app.get("/admin/retrain/status", tags=["Admin"])
+async def get_retrain_status():
+    """
+    Obtiene el estado del sistema de reentrenamiento automático
+    
+    Retorna información sobre la configuración y próxima ejecución
+    """
+    if not scheduler:
+        return {
+            "enabled": False,
+            "message": "Reentrenamiento automático deshabilitado"
+        }
+    
+    next_run = scheduler.get_next_run_time()
+    
+    return {
+        "enabled": config.RETRAIN_ENABLED,
+        "schedule_type": config.RETRAIN_SCHEDULE,
+        "next_run": next_run.isoformat() if next_run else None,
+        "min_improvement_threshold": config.RETRAIN_MIN_IMPROVEMENT,
+        "configuration": {
+            "hour": config.RETRAIN_HOUR if config.RETRAIN_SCHEDULE in ["daily", "weekly"] else None,
+            "minute": config.RETRAIN_MINUTE if config.RETRAIN_SCHEDULE in ["daily", "weekly"] else None,
+            "day_of_week": config.RETRAIN_DAY_OF_WEEK if config.RETRAIN_SCHEDULE == "weekly" else None,
+            "interval_hours": config.RETRAIN_INTERVAL_HOURS if config.RETRAIN_SCHEDULE == "interval" else None
+        }
+    }
+
+
+@app.get("/admin/retrain/history", tags=["Admin"])
+async def get_retrain_history():
+    """
+    Obtiene el historial de modelos entrenados (backups)
+    
+    Retorna información sobre los backups disponibles
+    """
+    import os
+    from pathlib import Path
+    
+    backup_dir = os.path.join(config.MODEL_DIR, "backups")
+    
+    if not os.path.exists(backup_dir):
+        return {"backups": [], "total": 0}
+    
+    backups = []
+    for backup_name in sorted(os.listdir(backup_dir), reverse=True):
+        backup_path = os.path.join(backup_dir, backup_name)
+        metadata_path = os.path.join(backup_path, "model_metadata.json")
+        
+        if os.path.exists(metadata_path):
+            import json
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+            
+            backups.append({
+                "name": backup_name,
+                "date": metadata.get('training_date'),
+                "accuracy": metadata.get('accuracy'),
+                "f2_score": metadata.get('f2_score')
+            })
+    
+    return {
+        "backups": backups,
+        "total": len(backups)
+    }
 
 def start_api():
     """Inicia el servidor API"""

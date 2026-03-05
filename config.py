@@ -54,7 +54,15 @@ para determinar si una reseña es positiva o negativa.
 """
 
 # Configuracion de MongoDB
-
 MONGODB_URL = os.getenv("MONGODB_URL","mongodb://localhost:27017")
 MONGODB_DATABASE = os.getenv("MONGODB_DATABASE","sentiment_classiffication")
 MONGODB_COLLECTION = os.getenv("MONGODB_COLLECTION","sentiment_classiffication")
+
+# Configuración del Scheduler de Reentrenamiento
+RETRAIN_ENABLED = os.getenv("RETRAIN_ENABLED", "true").lower() == "true"
+RETRAIN_SCHEDULE = os.getenv("RETRAIN_SCHEDULE", "daily")  # daily, weekly, interval
+RETRAIN_HOUR = int(os.getenv("RETRAIN_HOUR", "2"))  # Hora del día (0-23)
+RETRAIN_MINUTE = int(os.getenv("RETRAIN_MINUTE", "0"))  # Minuto (0-59)
+RETRAIN_DAY_OF_WEEK = os.getenv("RETRAIN_DAY_OF_WEEK", "mon")  # Para schedule weekly
+RETRAIN_INTERVAL_HOURS = int(os.getenv("RETRAIN_INTERVAL_HOURS", "24"))  # Para schedule interval
+RETRAIN_MIN_IMPROVEMENT = float(os.getenv("RETRAIN_MIN_IMPROVEMENT", "0.001"))  # Mejora mínima
