@@ -197,6 +197,13 @@ class AutoRetrainer:
                 "false_negatives": int(results['false_negatives']),
                 "true_positives": int(results['true_positives'])
             },
+             "training_history": {
+                "train_losses": [float(loss) for loss in history['train_losses']],
+                "val_losses": [float(loss) for loss in history['val_losses']],
+                "val_accuracies": [float(acc) for acc in history['val_accuracies']],
+                "best_epoch": int(history['best_epoch']),
+                "best_val_loss": float(history['best_val_loss'])
+            },
             "model_config": {
                 "pretrained_model": config.PRETRAINED_MODEL_NAME,
                 "input_dim": config.INPUT_DIM,

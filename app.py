@@ -1,6 +1,9 @@
 """
 API REST para clasificación de sentimientos en reseñas de películas
 """
+import json
+import os
+
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,7 +20,10 @@ from api.schemas import (
     ModelInfoResponse,
     ReviewInsertRequest,
     ReviewInsertResponse,
-    DatabaseStatsResponse
+    DatabaseStatsResponse,
+    TrainingHistoryData,
+    ConfusionMatrixData,
+    ModelMetricsResponse
 )
 from api.predictor import SentimentPredictor
 from training.scheduler import RetrainingScheduler
@@ -267,7 +273,7 @@ async def insert_review(request: ReviewInsertRequest):
         review_id = db_handler.insert_review(
             review=request.review,
             sentiment=request.sentiment,
-            setiment_val=sentiment_val,
+            sentiment_val=sentiment_val,
             clean_review=clean_review
         )
 
@@ -435,6 +441,85 @@ async def get_retrain_history():
         "total": len(backups)
     }
 
+@app.get("/model/metrics", response_model=ModelMetricsResponse, tags=["Model"])
+async def get_model_metrics():
+    """
+    Obtiene las métricas completas del modelo actual
+    
+    Retorna:
+    - Accuracy y F2-Score
+    - Historial de entrenamiento (pérdidas y accuracies por época)
+    - Matriz de confusión
+    - Información adicional del entrenamiento
+    
+    Estos datos pueden ser usados para generar visualizaciones en el cliente
+    """
+    try:
+        if not predictor.is_loaded():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="El modelo no está cargado"
+            )
+        
+        # Cargar metadata
+        if not os.path.exists(config.MODEL_METADATA_PATH):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No se encontró metadata del modelo. Entrena el modelo primero."
+            )
+        
+        with open(config.MODEL_METADATA_PATH, 'r') as f:
+            metadata = json.load(f)
+        
+        # Extraer datos del historial de entrenamiento
+        training_history_data = None
+        if 'training_history' in metadata:
+            hist = metadata['training_history']
+            num_epochs = len(hist['train_losses'])
+            
+            training_history_data = TrainingHistoryData(
+                epochs=list(range(1, num_epochs + 1)),
+                train_losses=hist['train_losses'],
+                val_losses=hist['val_losses'],
+                val_accuracies=hist['val_accuracies'],
+                best_epoch=hist['best_epoch'],
+                best_val_loss=hist['best_val_loss']
+            )
+        
+        # Extraer datos de la matriz de confusión
+        cm = metadata['confusion_matrix']
+        confusion_matrix_data = ConfusionMatrixData(
+            true_negatives=cm['true_negatives'],
+            false_positives=cm['false_positives'],
+            false_negatives=cm['false_negatives'],
+            true_positives=cm['true_positives'],
+            matrix=[
+                [cm['true_negatives'], cm['false_positives']],
+                [cm['false_negatives'], cm['true_positives']]
+            ]
+        )
+        
+        # Construir respuesta
+        response = ModelMetricsResponse(
+            accuracy=metadata['accuracy'],
+            f2_score=metadata['f2_score'],
+            training_history=training_history_data,
+            confusion_matrix=confusion_matrix_data,
+            training_date=metadata.get('training_date'),
+            training_samples=metadata.get('training_samples'),
+            validation_samples=metadata.get('validation_samples')
+        )
+        
+        return response
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener métricas del modelo: {str(e)}"
+        )
+    
 def start_api():
     """Inicia el servidor API"""
     uvicorn.run(

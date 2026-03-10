@@ -13,7 +13,6 @@ from models.embeddings import EmbeddingGenerator
 from models.classifier import MovieSentimentClassifier
 from training.trainer import ModelTrainer
 from evaluation.evaluator import ModelEvaluator
-from utils.visualization import plot_confusion_matrix, plot_training_history
 
 
 def set_seed(seed):
@@ -24,19 +23,32 @@ def set_seed(seed):
         torch.cuda.manual_seed_all(seed)
 
 
-def save_model_metadata(results, history):
-    """Guarda metadata del modelo entrenado"""
+def save_model_metadata(results, history, train_size, val_size):
+    """
+    Guarda metadata del modelo entrenado incluyendo historial completo
+   
+    Args:
+        results: Resultados de la evaluación
+        history: Historial de entrenamiento
+        train_size: Tamaño del conjunto de entrenamiento
+        val_size: Tamaño del conjunto de validación
+    """
     metadata = {
         "training_date": datetime.now().isoformat(),
         "accuracy": float(results['accuracy']),
         "f2_score": float(results['f2_score']),
-        "best_epoch": int(history['best_epoch']),
-        "best_val_loss": float(history['best_val_loss']),
         "confusion_matrix": {
             "true_negatives": int(results['true_negatives']),
             "false_positives": int(results['false_positives']),
             "false_negatives": int(results['false_negatives']),
             "true_positives": int(results['true_positives'])
+        },
+        "training_history": {
+            "train_losses": [float(loss) for loss in history['train_losses']],
+            "val_losses": [float(loss) for loss in history['val_losses']],
+            "val_accuracies": [float(acc) for acc in history['val_accuracies']],
+            "best_epoch": int(history['best_epoch']),
+            "best_val_loss": float(history['best_val_loss'])
         },
         "model_config": {
             "pretrained_model": config.PRETRAINED_MODEL_NAME,
@@ -45,9 +57,13 @@ def save_model_metadata(results, history):
             "hidden_dim_2": config.HIDDEN_DIM_2,
             "dropout_rate": config.DROPOUT_RATE,
             "learning_rate": config.LEARNING_RATE,
-            "batch_size": config.EMBEDDING_BATCH_SIZE
+            "batch_size": config.EMBEDDING_BATCH_SIZE,
+            "epochs": config.EPOCHS,
+            "patience": config.PATIENCE
         },
-        "data_source": "MongoDB"
+        "data_source": "MongoDB",
+        "training_samples": train_size,
+        "validation_samples": val_size
     }
    
     with open(config.MODEL_METADATA_PATH, 'w') as f:
@@ -155,20 +171,16 @@ def main():
     results = evaluator.evaluate(val_loader_emb)
     evaluator.print_results(results)
    
-    # 10. Guardar metadata
-    save_model_metadata(results, history)
-   
-    # 11. Visualizaciones
-    print("\nGenerando visualizaciones...")
-    plot_confusion_matrix(results['confusion_matrix'])
-    plot_training_history(history)
+    # 10. Guardar metadata con historial completo
+    save_model_metadata(results, history, len(train_df), len(val_df))
    
     print("\n" + "="*80)
     print("ENTRENAMIENTO COMPLETADO")
     print("="*80)
     print(f"\nModelo guardado en: {config.CLASSIFIER_MODEL_PATH}")
     print(f"Metadata guardada en: {config.MODEL_METADATA_PATH}")
-    print("\nPara iniciar la API, ejecuta: python app.py")
+    print("\n📊 Para visualizar las métricas, usa el endpoint: GET /model/metrics")
+    print("Para iniciar la API, ejecuta: python app.py")
 
 
 if __name__ == "__main__":

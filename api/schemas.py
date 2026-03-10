@@ -2,7 +2,7 @@
 Esquemas de datos para la API usando Pydantic
 """
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
 
 
 class ReviewRequest(BaseModel):
@@ -114,3 +114,32 @@ class DatabaseStatsResponse(BaseModel):
     negative_reviews: int
     positive_percentage: float
     negative_percentage: float
+
+class TrainingHistoryData(BaseModel):
+    """Datos del historial de entrenamiento"""
+    epochs: List[int] = Field(..., description="Números de época")
+    train_losses: List[float] = Field(..., description="Pérdidas de entrenamiento por época")
+    val_losses: List[float] = Field(..., description="Pérdidas de validación por época")
+    val_accuracies: List[float] = Field(..., description="Accuracies de validación por época")
+    best_epoch: int = Field(..., description="Mejor época")
+    best_val_loss: float = Field(..., description="Mejor pérdida de validación")
+
+
+class ConfusionMatrixData(BaseModel):
+    """Datos de la matriz de confusión"""
+    true_negatives: int = Field(..., description="Verdaderos negativos")
+    false_positives: int = Field(..., description="Falsos positivos")
+    false_negatives: int = Field(..., description="Falsos negativos")
+    true_positives: int = Field(..., description="Verdaderos positivos")
+    matrix: List[List[int]] = Field(..., description="Matriz 2x2 [[TN, FP], [FN, TP]]")
+
+
+class ModelMetricsResponse(BaseModel):
+    """Respuesta completa con métricas del modelo"""
+    accuracy: float = Field(..., description="Accuracy del modelo")
+    f2_score: float = Field(..., description="F2-Score del modelo")
+    training_history: Optional[TrainingHistoryData] = Field(None, description="Historial de entrenamiento")
+    confusion_matrix: ConfusionMatrixData = Field(..., description="Matriz de confusión")
+    training_date: Optional[str] = Field(None, description="Fecha de entrenamiento")
+    training_samples: Optional[int] = Field(None, description="Número de muestras de entrenamiento")
+    validation_samples: Optional[int] = Field(None, description="Número de muestras de validación")
