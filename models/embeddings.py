@@ -23,7 +23,10 @@ class EmbeddingGenerator:
         self.tokenizer = BertTokenizer.from_pretrained(model_name)
         self.model = BertForSequenceClassification.from_pretrained(model_name).to(device)
         self.model.eval()
-        
+        print(f"Configuracion del modelo: {device}")
+        print(f" - hidden size: {self.model.config.hidden_size}") #debe de ser 768
+        print(f" - Num hidden layers: {self.model.config.num_hidden_layers}")
+
         print(f"Modelo cargado en dispositivo: {device}")
     
     def generate_embeddings(self, dataloader):
@@ -55,7 +58,7 @@ class EmbeddingGenerator:
                 
                 outputs = self.model(**inputs, output_hidden_states=True)
                 cls_embeddings = outputs.hidden_states[-1][:, 0, :]
-                
+
                 all_embeddings.append(cls_embeddings.cpu().numpy())
                 all_labels.append(torch.tensor(batch_labels).numpy())
         

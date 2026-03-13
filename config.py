@@ -21,7 +21,7 @@ MODEL_METADATA_PATH = os.path.join(MODEL_DIR, "model_metadata.json")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 # Configuración del modelo pre-entrenado BERT
-PRETRAINED_MODEL_NAME = "AventIQ-AI/bert-movie-review-sentiment-analysis"
+PRETRAINED_MODEL_NAME = "textattack/bert-base-uncased-imdb"
 MAX_LENGTH = 128
 
 # Configuración de entrenamiento
@@ -33,7 +33,7 @@ PATIENCE = 4
 TRAIN_TEST_SPLIT = 0.2
 
 # Configuración de la red neuronal
-INPUT_DIM = 128  # Dimensión del embedding de BERT
+INPUT_DIM = 768  # Dimensión del embedding de BERT
 HIDDEN_DIM_1 = 128
 HIDDEN_DIM_2 = 64
 DROPOUT_RATE = 0.3
