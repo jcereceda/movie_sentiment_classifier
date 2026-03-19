@@ -1,0 +1,118 @@
+<div class="home-container">
+  <!-- Movie Display Section -->
+  <div class="movie-display-section">
+    @if (currentMovie()) {
+      <div class="movie-content">
+        <!-- Poster -->
+        <div class="poster-container">
+          @if (currentPoster()) {
+            <img
+              [src]="currentPoster()"
+              [alt]="currentTitle()"
+              class="movie-poster"
+            />
+          } @else {
+            <div class="poster-placeholder">
+              <span>No Image Available</span>
+            </div>
+          }
+        </div>
+
+        <!-- Movie Info -->
+        <div class="movie-info">
+          <h1 class="movie-title">{{ currentTitle() }}</h1>
+          <p class="movie-overview">{{ currentOverview() }}</p>
+        </div>
+      </div>
+
+      <!-- Next Button -->
+      <div class="navigation-section">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="nextMovie()"
+          class="next-button"
+        >
+          Next Movie
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Review Input Section -->
+  <div class="review-section">
+    <mat-card class="review-card">
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>What did you think about this movie?</mat-label>
+          <textarea
+            matInput
+            [ngModel]="reviewText()"
+            (ngModelChange)="reviewText.set($event)"
+            rows="4"
+            placeholder="Share your thoughts..."
+          ></textarea>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="analyzeSentiment()"
+          [disabled]="!reviewText().trim() || isLoading()"
+          class="analyze-button"
+        >
+          @if (isLoading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <span>Analyze Sentiment</span>
+          }
+        </button>
+
+        <!-- Results -->
+        @if (sentimentResult()) {
+          <div class="result-section">
+            <h3>Analysis Result:</h3>
+            <div class="sentiment-result" [style.color]="sentimentColor()">
+              <strong>Sentiment:</strong> {{ sentimentResult().sentiment }}
+            </div>
+            <div class="confidence-result">
+              <strong>Confidence:</strong> {{ (sentimentResult().confidence * 100).toFixed(2) }}%
+            </div>
+            <div class="probabilities">
+              <div>Positive: {{ (sentimentResult().probability_positive * 100).toFixed(2) }}%</div>
+              <div>Negative: {{ (sentimentResult().probability_negative * 100).toFixed(2) }}%</div>
+            </div>
+
+            <!-- Feedback Section -->
+            <div class="feedback-section">
+              <p class="feedback-question">Is this the expected sentiment?</p>
+              <div class="feedback-buttons">
+                <button
+                  mat-icon-button
+                  class="thumb-button thumb-up"
+                  (click)="giveFeedback(true)"
+                  [disabled]="feedbackGiven()"
+                  [class.feedback-given]="feedbackGiven()"
+                >
+                  <mat-icon>thumb_up</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  class="thumb-button thumb-down"
+                  (click)="giveFeedback(false)"
+                  [disabled]="feedbackGiven()"
+                  [class.feedback-given]="feedbackGiven()"
+                >
+                  <mat-icon>thumb_down</mat-icon>
+                </button>
+              </div>
+              @if (feedbackGiven()) {
+                <p class="feedback-thanks">Thank you for your feedback!</p>
+              }
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

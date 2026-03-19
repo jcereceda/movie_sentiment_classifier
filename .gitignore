@@ -1,4 +1,50 @@
+# BACK
 .env
 .ipynb_checkpoints/
 __pycache__/
 BACK/IMDB_Dataset.csv
+
+
+# FRONT
+# Compiled output
+/FRONT/dist
+/FRONT/tmp
+/FRONT/out-tsc
+/FRONT/bazel-out
+
+# Node
+/FRONT/node_modules
+/FRONT/npm-debug.log
+/FRONT/yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+/FRONT/.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+
+# Miscellaneous
+/FRONT/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+
+# System files
+.DS_Store
+Thumbs.db

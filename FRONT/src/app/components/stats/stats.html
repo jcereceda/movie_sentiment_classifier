@@ -1,0 +1,73 @@
+<div class="stats-container">
+  @if(isLoading()){
+  <div class="loading-section">
+    <mat-spinner></mat-spinner>
+    <p>Loading model statistics...</p>
+  </div>
+  }
+
+  @if (!isLoading() && modelMetrics()) {
+  <div class="stats-content">
+    <!-- Model Metrics Summary -->
+    <mat-card class="metrics-card">
+      <mat-card-header>
+        <mat-card-title>Model Performance Metrics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <h3>Accuracy</h3>
+            <p class="metric-value">{{ (modelMetrics().accuracy * 100).toFixed(2) }}%</p>
+          </div>
+          <div class="metric-item">
+            <h3>F2-Score</h3>
+            <p class="metric-value">{{ (modelMetrics().f2_score * 100).toFixed(2) }}%</p>
+          </div>
+          <div class="metric-item">
+            <h3>Training Samples</h3>
+            <p class="metric-value">{{ modelMetrics().training_samples }}</p>
+          </div>
+          <div class="metric-item">
+            <h3>Validation Samples</h3>
+            <p class="metric-value">{{ modelMetrics().validation_samples }}</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Training History Chart -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Training History</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <canvas
+            baseChart
+            [data]="lineChartData()"
+            [options]="lineChartOptions"
+            type="line"
+          ></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Confusion Matrix Chart -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Confusion Matrix</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <canvas
+            baseChart
+            [data]="barChartData()"
+            [options]="barChartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}
+</div>

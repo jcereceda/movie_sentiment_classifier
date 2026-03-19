@@ -1,0 +1,46 @@
+.app-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.app-header {
+  background-color: black;
+  color: white;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 3px solid black;
+}
+
+.app-header h1 {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.main-tabs {
+  height: calc(100vh - 80px);
+}
+
+::ng-deep .mat-mdc-tab-labels {
+  background-color: white;
+  border-bottom: 2px solid black;
+}
+
+::ng-deep .mat-mdc-tab-label {
+  color: black !important;
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+::ng-deep .mat-mdc-tab-label-active {
+  background-color: black;
+  color: white !important;
+}
+
+::ng-deep .mat-mdc-tab-body-wrapper {
+  height: 100%;
+}

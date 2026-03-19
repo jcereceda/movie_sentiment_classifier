@@ -1,0 +1,57 @@
+.stats-container {
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+}
+
+.stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.metrics-card,
+.chart-card {
+  background-color: white;
+  border: 2px solid black;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.metric-item {
+  text-align: center;
+  padding: 15px;
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+.metric-item h3 {
+  margin: 0 0 10px 0;
+  font-size: 1em;
+  color: #666;
+}
+
+.metric-value {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0;
+  color: black;
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}
