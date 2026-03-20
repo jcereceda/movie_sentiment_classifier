@@ -522,14 +522,15 @@ async def get_model_metrics():
     
 def start_api():
     """Inicia el servidor API"""
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(
         "app:app",
         host=config.API_HOST,
-        port=config.API_PORT,
+        port=port,
         reload=False,  # Cambiar a True en desarrollo
         log_level="info"
     )
 
 
-# if __name__ == "__main__":
-#     start_api()
+if __name__ == "__main__":
+     start_api()

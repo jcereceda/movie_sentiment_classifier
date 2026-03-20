@@ -43,7 +43,6 @@ CLASSIFICATION_THRESHOLD = 0.5
 
 # Configuración de la API
 API_HOST = "0.0.0.0"
-API_PORT = 8000
 API_TITLE = "Movie Review Sentiment Analysis API"
 API_VERSION = "1.0.0"
 API_DESCRIPTION = """
