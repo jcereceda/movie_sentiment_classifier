@@ -527,7 +527,6 @@ def start_api():
         "app:app",
         host=config.API_HOST,
         port=port,
-        reload=False,  # Cambiar a True en desarrollo
         log_level="info"
     )
 
