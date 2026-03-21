@@ -160,7 +160,7 @@ Output (1) + Sigmoid
 
 ---
 
-## 🚀 Endpoints API
+## 🚀 Endpoints principales API
 
 - POST /predict  
 - POST /predict/batch  
@@ -169,11 +169,11 @@ Output (1) + Sigmoid
 
 ---
 
-## 📦 Instalación
+## 📦 Instalación Back
 
 ```bash
 git clone https://github.com/tu-usuario/movie-sentiment-api.git
-cd movie-sentiment-api
+cd movie-sentiment-api/BACK
 
 python -m venv venv
 source venv/bin/activate
@@ -187,6 +187,16 @@ python main.py
 python app.py
 ```
 
+---
+
+## 📦 Instalación Front
+
+```bash
+git clone https://github.com/tu-usuario/movie-sentiment-api.git
+cd movie-sentiment-api/FRONT
+```
+
+A tener en cuenta la creación de archivos .env para conexion con Base de datos y api de tmdb.org
 ---
 
 ## 🔮 Trabajo Futuro
