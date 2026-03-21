@@ -138,17 +138,15 @@ Output (1) + Sigmoid
 
 ### Métricas
 
-- Accuracy: 85.23%  
-- F2-Score: 84.12%  
-- Precision: 86.5%  
-- Recall: 83.8%  
+- Accuracy: 93.27%  
+- F2-Score: 83.25%    
 
 ### Matriz de Confusión
 
 |                | Pred. Neg | Pred. Pos |
 |----------------|----------|----------|
-| Real Negativo  | 450      | 50       |
-| Real Positivo  | 48       | 452      |
+| Real Negativo  | 4678     | 322      |
+| Real Positivo  | 341      | 4660     |
 
 ---
 
@@ -194,9 +192,12 @@ python app.py
 ```bash
 git clone https://github.com/tu-usuario/movie-sentiment-api.git
 cd movie-sentiment-api/FRONT
+
+npm install
+npm start
 ```
 
-A tener en cuenta la creación de archivos .env para conexion con Base de datos y api de tmdb.org
+ A tener en cuenta la creación de archivos .env para conexion con Base de datos y api de tmdb.org
 ---
 
 ## 🔮 Trabajo Futuro
