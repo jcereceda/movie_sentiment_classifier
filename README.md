@@ -207,3 +207,6 @@ npm start
 - Explicabilidad (LIME/SHAP)
 - Mejora de la web
 
+## Presentación
+
+https://docs.google.com/presentation/d/1kvwqa0L3_2G7zGyYslxQE9Fy99frzsPy_c8hpQQdTrs/edit?usp=sharing
